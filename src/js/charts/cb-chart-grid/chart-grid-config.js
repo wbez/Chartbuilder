@@ -112,7 +112,7 @@ var defaultProps = {
 		chartType: "chartgrid",
 		title: "",
 		source: "",
-		credit: "Made with Chartbuilder",
+		credit: "WBEZ",
 		size: "auto"
 	}
 };
