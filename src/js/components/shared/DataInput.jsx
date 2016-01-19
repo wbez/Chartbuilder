@@ -49,7 +49,7 @@ var inputAlerts = {
 		alertType: "error"
 	},
 	"VALID": {
-		alertText: "Your data are looking healthy",
+		alertText: "Your data looks healthy",
 		boldText: "",
 		alertType: "success"
 	}
