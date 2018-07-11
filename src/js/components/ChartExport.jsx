@@ -123,8 +123,8 @@ var ChartExport = React.createClass({
 		saveSvgAsPng.svgAsDataUri(chart, {
 			cleanFontDefs: true,
 			fontFamilyRemap: {
-				"Khula-Light": "Khula Light",
-				"Khula-Regular": "Khula",
+				"Source Sans Pro": "Source Sans Pro",
+				"Source Sans Pro": "Source Sans Pro",
 			}
 		}, function(uri) {
 			autoClickDownload(filename, uri);
