@@ -1,15 +1,18 @@
-
-var assign = require("lodash/object/assign");
+require("sugar-date");
+var assign = require("lodash/assign");
 var EventEmitter = require("events").EventEmitter;
 
 /* Flux dispatcher */
 var Dispatcher = require("../dispatcher/dispatcher");
+var now = new Date();
 
 var _session = {
 	separators: detectNumberSeparators(),
 	emSize: 10,
 	width: 640,
-	timerOn: (localStorage.hasOwnProperty("model") === true)
+	timerOn: (localStorage.hasOwnProperty("model") === true),
+	nowOffset: getTZOffset(now),
+	now: now
 };
 
 var CHANGE_EVENT = "change";
@@ -56,7 +59,7 @@ var SessionStore = assign({}, EventEmitter.prototype, {
 
 });
 
-Dispatcher.register(function(payload) {
+function registeredCallback(payload) {
 	var action = payload.action;
 
 	switch(action.eventName) {
@@ -80,7 +83,7 @@ Dispatcher.register(function(payload) {
 	}
 
 	return true;
-});
+}
 
 // Get thousands and decimal separators based on locale
 function detectNumberSeparators() {
@@ -101,5 +104,13 @@ function detectNumberSeparators() {
 
 	return o;
 }
+
+function getTZOffset(date) {
+	var _offset = date.getUTCOffset().split("");
+	_offset.splice(3, 0, ":")
+	return _offset.join("");
+}
+
+SessionStore.dispatchToken = Dispatcher.register(registeredCallback);
 
 module.exports = SessionStore;

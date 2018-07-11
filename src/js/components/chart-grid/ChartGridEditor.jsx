@@ -7,14 +7,16 @@ var PropTypes = React.PropTypes;
 var update = require("react-addons-update");
 var cx = require("classnames");
 
-var clone = require("lodash/lang/clone");
-var map = require("lodash/collection/map");
-var each = require("lodash/collection/each");
-var range = require("lodash/utility/range");
+var bind = require("lodash/bind");
+var clone = require("lodash/clone");
+var each = require("lodash/each");
+var map = require("lodash/map");
+var range = require("lodash/range");
 
 /* Shared Chartbuilder components */
 var DataInput = require("../shared/DataInput.jsx");
 var DateScaleSettings = require("../shared/DateScaleSettings.jsx");
+var NumericScaleSettings = require("../shared/NumericScaleSettings.jsx");
 var XY_yScaleSettings = require("../shared/XY_yScaleSettings.jsx");
 var ChartGrid_xScaleSettings = require("./ChartGrid_xScaleSettings.jsx");
 
@@ -39,11 +41,7 @@ var ChartGridEditor = React.createClass({
 
 	propTypes: {
 		chartProps: PropTypes.shape({
-			input: PropTypes.shape({
-				raw: PropTypes.string,
-				status: PropTypes.string,
-				valid: PropTypes.bool
-			}).isRequired,
+			input: PropTypes.object.isRequired,
 			chartSettings: PropTypes.array,
 			data: PropTypes.array,
 			scale: PropTypes.shape({
@@ -74,7 +72,7 @@ var ChartGridEditor = React.createClass({
 		var chartSettings;
 
 		/* Create a settings component for each data series (column) */
-		chartSettings = map(chartProps.chartSettings, function(seriesSetting, i) {
+		chartSettings = map(chartProps.chartSettings, bind(function(seriesSetting, i) {
 			return (
 				<ChartGrid_chartSettings
 					chartSettings={chartProps.chartSettings}
@@ -87,7 +85,15 @@ var ChartGridEditor = React.createClass({
 					key={i}
 				/>
 			);
-		}, this);
+		}, this));
+
+		var inputErrors = this.props.errors.messages.filter(function(e) {
+			return e.location === "input";
+		});
+
+		var axisErrors = this.props.errors.messages.filter(function(e) {
+			return e.location === "axis";
+		});
 
 		/*
 		 * Settings to control the numerical scale. It will be different for bar
@@ -98,6 +104,7 @@ var ChartGridEditor = React.createClass({
 			scaleSettings.push(
 				<ChartGrid_xScaleSettings
 					scale={chartProps.scale}
+					errors={axisErrors}
 					onUpdate={this._handlePropAndReparse.bind(null, "scale")}
 					className="scale-options"
 					key="xScale"
@@ -108,6 +115,7 @@ var ChartGridEditor = React.createClass({
 			scaleSettings.push(
 				<XY_yScaleSettings
 					scale={chartProps.scale}
+					errors={axisErrors}
 					className="scale-options"
 					onUpdate={this._handlePropAndReparse.bind(null, "scale")}
 					onReset={this._handlePropAndReparse.bind(null, "scale")}
@@ -124,9 +132,24 @@ var ChartGridEditor = React.createClass({
 			scaleSettings.push(
 				<DateScaleSettings
 					key="xScale"
+					nowOffset={this.props.session.nowOffset}
+					now={this.props.session.now}
 					scale={chartProps.scale}
 					stepNumber="5"
-					onUpdate={this._handlePropUpdate.bind(null, "scale")}
+					onUpdate={this._handlePropAndReparse.bind(null, "scale")}
+				/>
+			)
+		} else if (chartProps.scale.isNumeric) {
+			scaleSettings.push(
+				<NumericScaleSettings
+					scale={chartProps.scale}
+					key="numericSettings"
+					onUpdate={this._handlePropAndReparse.bind(null, "scale")}
+					onReset={this._handlePropAndReparse.bind(null, "scale")}
+					className="scale-options"
+					id="numericSettings"
+					name="Bottom"
+					stepNumber="5"
 				/>
 			)
 		}
@@ -139,6 +162,7 @@ var ChartGridEditor = React.createClass({
 						<span>Input your data</span>
 					</h2>
 					<DataInput
+						errors={inputErrors}
 						chartProps={chartProps}
 						className="data-input"
 					/>
@@ -148,7 +172,6 @@ var ChartGridEditor = React.createClass({
 						<span className="step-number">3</span>
 						<span>Set series options</span>
 					</h2>
-					{chartSettings}
 					<ChartGrid_universalToggle
 						text="Single color"
 						chartSettings={chartProps.chartSettings}
@@ -156,6 +179,7 @@ var ChartGridEditor = React.createClass({
 						onUpdate={this._handlePropUpdate.bind(null, "chartSettings")}
 						onClick={this._handleStateUpdate}
 					/>
+					{chartSettings}
 					<ChartGrid_gridSettings
 						grid={chartProps._grid}
 						onUpdate={this._handlePropAndReparse.bind(null, "_grid")}
@@ -260,11 +284,11 @@ var ChartGrid_chartSettings = React.createClass({
 		return (
 			<div className="series-control">
 				<div className="section colorsection">
-					<label>Color</label>
 					<ColorPicker
 						onChange={this._handleColorUpdate.bind(null, this.props.index, "colorIndex")}
 						numColors={this.props.numColors}
 						colorIndex={seriesSetting.colorIndex}
+						labelText="Color"
 					/>
 				</div>
 				<TextInput

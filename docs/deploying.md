@@ -1,3 +1,13 @@
+### To Github pages
+
+If your Chartbuilder is on a Github repo, you can deploy it to github pages
+using the command:
+
+		npm run gh-pages
+
+The resulting page will also contain the Chartbuilder API docs at `/api-docs`,
+with Chartbuilder at the root `index.html`.
+
 ### Deploying your Chartbuilder
 
 Once you're done [customizing](02-customizing-chartbuilder.md), you'll want to
@@ -22,3 +32,8 @@ using FTP or however else. Or you might create a simple auto-deploy script like 
 		echo "SYNCING BUILD WITH REMOTE FILES..."
 		rsync -rav --progress build/* <MY_SERVER_LOCATION>
 
+#### AWS
+
+Chartbuilder can easily be automatically deployed to Amazon Web Services. Just
+rename the file at `gulp/aws-config.json.example` to `gulp/aws-config.json`, and
+add your credentials. Then you can run the `npm run aws` process to deploy.

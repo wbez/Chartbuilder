@@ -18,12 +18,33 @@ var init_data_ordinal_multiple = [
 	"price,91,85,58,34,44,37"
 ].join("\n");
 
+var init_data_ordinal_long = [
+	"x,Follow a budget to limit spending,Pay credit card bills on time,Review bills,Save and invest 5-10% of income,Pay entire credit card bill,Build emergency fund,Balance checkbook,Buy only things they need",
+	"2012,76%,85%,82%,71%,79%,45%,58%,62%",
+	"2013,74%,83%,80%,69%,78%,46%,55%,61%",
+	"2014,64%,78%,75%,62%,72%,40%,46%,60%",
+	"2015,55%,65%,63%,50%,57%,33%,37%,50%"
+].join("\n");
+
 var init_data_ordinal_single = [
 	"names\tApples",
 	"juicyness\t5.5",
 	"color\t14",
 	"flavor\t6.1",
 	"travelability\t0"
+].join("\n");
+
+var init_data_linear = [
+	"value	foo",
+	"1	$6,530",
+	"2	$8,711",
+	"3	$7,907",
+	"4	$9,507",
+	"5	$9,293",
+	"6	$13,865",
+	"7	$15,779",
+	"8	$9,360",
+	"9	$8,000"
 ].join("\n");
 
 var init_data_time = [
@@ -650,13 +671,93 @@ var init_data_comma = [
 	"2013	$8,000"
 ].join("\n");
 
+var uneven_series = [
+	"Year	China	US",
+	"2000	2.8	23.5",
+	"2005	22	14.7",
+	"2010	28	",
+	"2015	25.4	"
+].join("\n");
+
+var too_many_series = [
+	"Year	A	B	C	D	E	F	G	H	I	J	K	L	M	N",
+	"2000	2.8	23.5	11.2	21.1	2.8	23.5	11.2	21.1	2.8	23.5	11.2	21.1	21.1	21.1",
+	"2005	22	14.7	7.6	17.2	22	14.7	7.6	17.2	22	14.7	7.6	17.2	17.2	17.2",
+	"2010	28	11.5	6.6	13.8	28	11.5	6.6	13.8	28	11.5	6.6	13.8	13.8	13.8",
+	"2015	25.4	12.2	6.8	13.4	25.4	12.2	6.8	13.4	25.4	12.2	6.8	13.4	13.4	13.4"
+].join("\n");
+
+var too_few_series = [
+	"China",
+	"2.8",
+	"22",
+	"28",
+	"25.42015",
+].join("\n");
+
+var nan_values = [
+	"year	foo",
+	"1989	$6,530",
+	"1992	NOT_A_NUMBER",
+	"1995	$7,907",
+	"1998	$9,507",
+	"2001	$9,293",
+	"2004	$1,865",
+	"2007	$1,779",
+	"2010	$9,360",
+	"2013	$8,000"
+].join("\n");
+
+var not_dates = [
+	"year	foo",
+	"NOT_A_DATE	$6,530",
+	"1992	$8,711",
+	"1995	$7,907",
+	"1998	$9,507",
+	"2001	$9,293",
+	"2004	$1,865",
+	"2007	$1,779",
+	"2010	$9,360",
+	"2013	$8,000"
+].join("\n");
+
+var large_numbers = [
+	"year	foo",
+	"1989	600,530",
+	"1992	500,000",
+	"1995	700,907",
+	"1998	900,507",
+	"2001	900,293",
+	"2004	100,865",
+	"2007	100,779",
+	"2010	900,360",
+	"2013	800,000"
+].join("\n");
+
+var multiple_errors = [
+	"Year	China	US",
+	"NOT_A_DATE	2.8	23.5",
+	"2005	22	NOT_A_NUMBER",
+	"2010	28	",
+	"2015	25.4	"
+].join("\n");
+
 module.exports = {
 	init_data_ordinal: init_data_ordinal,
 	init_data_ordinal_multiple: init_data_ordinal_multiple,
 	init_data_ordinal_single: init_data_ordinal_single,
+	init_data_ordinal_long: init_data_ordinal_long,
+	init_data_linear: init_data_linear,
 	init_data_time: init_data_time,
 	init_data_time_multiple: init_data_time_multiple,
 	init_data_time_single: init_data_time_single,
 	init_data_intraday_single: init_data_intraday_single,
-	init_data_comma: init_data_comma
+	init_data_comma: init_data_comma,
+	uneven_series: uneven_series,
+	too_many_series: too_many_series,
+	too_few_series: too_few_series,
+	nan_values: nan_values,
+	not_dates: not_dates,
+	multiple_errors: multiple_errors,
+	large_numbers: large_numbers
 };

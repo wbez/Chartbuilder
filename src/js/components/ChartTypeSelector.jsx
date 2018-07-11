@@ -3,9 +3,9 @@
 // and apply setting that carry over to the new type
 
 var React = require("react");
-var clone = require("lodash/lang/clone");
-var map = require("lodash/collection/map");
-var keys = require("lodash/object/keys");
+var clone = require("lodash/clone");
+var map = require("lodash/map");
+var keys = require("lodash/keys");
 var helper = require("../util/helper");
 
 // Flux actions
@@ -15,7 +15,7 @@ var ChartServerActions = require("../actions/ChartServerActions");
 var chartbuilderUI = require("chartbuilder-ui");
 var ButtonGroup = chartbuilderUI.ButtonGroup;
 
-var chartConfig = require("../charts/chart-config");
+var chartConfig = require("../charts/chart-type-configs");
 
 /**
  * Select a new chart type, copying shared settings over to the new type.

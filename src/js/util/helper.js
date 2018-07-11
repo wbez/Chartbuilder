@@ -1,7 +1,7 @@
-var isArray = require("lodash/lang/isArray");
-var isUndefined = require("lodash/lang/isUndefined");
-var keys = require("lodash/object/keys");
-var reduce = require("lodash/collection/reduce");
+var isArray = require("lodash/isArray");
+var isUndefined = require("lodash/isUndefined");
+var keys = require("lodash/keys");
+var reduce = require("lodash/reduce");
 var d3 = require("d3");
 var processDates = require("./process-dates");
 
@@ -109,10 +109,8 @@ function compute_scale_domain(scaleObj, data, opts) {
  * @return {number} Rounded number
  */
 function round_to_precision(num, precision, supress_thou_sep) {
-	if (num === 0) {
-		//zero should always be "0"
-		return "0";
-	}
+	//zero should always be "0"
+	if (num === 0) return "0";
 
 	var s = Math.round(num * Math.pow(10,precision)) / Math.pow(10,precision);
 	s = s + "";
@@ -216,6 +214,88 @@ function merge_or_apply(defaults, source) {
 }
 
 /**
+ * Given a the domain of a scale suggest the most numerous number
+ * of round number ticks that it cold be divided into while still containing
+ values evenly divisible by 1, 2, 2.5, 5, 10, or 25.
+ * @param {array} domain - An array of two number like objects
+ * @returns {integer} - Result is a single integer representing a nice number of ticks to use
+ * @static
+ * @memberof helper
+*/
+function suggest_tick_num(domain) {
+	var MAX_TICKS = 10;
+	var INTERVAL_BASE_VALS = [1, 2, 2.5, 5, 10, 25];
+	var range = Math.abs(domain[0] - domain[1])
+	var minimum = range / MAX_TICKS;
+	var digits = Math.floor(range).toString().length;
+	var multiplier = Math.pow(10, (digits - 2));
+
+	var acceptable_intervals = reduce(INTERVAL_BASE_VALS, function(prev, curr) {
+		var mult = curr * multiplier;
+
+		if (mult >= minimum) {
+			prev = prev.concat([mult]);
+		}
+
+		return prev;
+	}, []);
+
+	for (var i = 0; i < acceptable_intervals.length; i++) {
+		var interval = acceptable_intervals[i]
+		if(range % interval == 0) {
+			return (range / interval) + 1
+		}
+	};
+
+	return 11;
+}
+
+/**
+ * Given a timezone offset in an hour:minute format and return the equivalent
+ * number of minutes as a number
+ * only exist in the source object.
+ * @param {object} offset - A string in a hh:mm format or "Z" for no offset
+ * @returns {number} - Number of minutes
+ * @static
+ * @memberof helper
+*/
+function tz_offset_to_minutes(offset) {
+	if (offset == "Z") {
+		return 0
+	}
+
+	var offset = offset.split(":")
+
+	if(offset.length == 1) {
+		offset = offset[0]
+		split_loc = offset.length - 2
+		offset = [offset.substring(0, split_loc), offset.substring(split_loc)]
+	}
+	sign = offset[0].indexOf("-") > -1 ? -1 : 1
+
+	offset = offset.map(parseFloat)
+
+	return (offset[0]*60) + (sign * offset[1])
+}
+
+function compute_text_width(text, font) {
+	// re-use canvas object for better performance
+	var canvas = compute_text_width.canvas || (compute_text_width.canvas = document.createElement("canvas"));
+	var context = canvas.getContext("2d");
+	context.font = font;
+	var metrics = context.measureText(text);
+	return (Math.round(metrics.width * 100) / 100);
+};
+
+function add_pref_suf(tickText, renderPrefSuf, prefix, suffix) {
+	if (renderPrefSuf) {
+		return [prefix, tickText, suffix].join("");
+	} else {
+		return tickText;
+	}
+}
+
+/**
  * Helper functions!
  * @name helper
  */
@@ -226,7 +306,11 @@ var helper = {
 	computeScaleDomain: compute_scale_domain,
 	precision: precision,
 	transformCoords: transform_coords,
-	mergeOrApply: merge_or_apply
+	mergeOrApply: merge_or_apply,
+	suggestTickNum: suggest_tick_num,
+	TZOffsetToMinutes: tz_offset_to_minutes,
+	computeTextWidth: compute_text_width,
+	addPrefSuf: add_pref_suf
 };
 
 module.exports = helper;

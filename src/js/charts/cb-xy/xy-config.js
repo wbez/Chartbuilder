@@ -1,4 +1,5 @@
 var ChartConfig = require("../ChartConfig");
+var now = new Date();
 
 /**
  * ### Configuration of an XY chart
@@ -29,17 +30,24 @@ var ChartConfig = require("../ChartConfig");
 * @property {object} margin - Distances btwn outer chart elements and container
 * @property {object} padding - Distances btwn inner chart elements and container
 */
+
 var display = {
 	labelRectSize: "0.6em",
 	labelXMargin: "0.6em",
 	labelTextMargin: "0.3em",
 	labelRowHeight: "1.2em",
-	afterTitle: "1.6em",
-	afterLegend: "1.6em",
-	blockerRectOffset: "0.3em",
-	columnPaddingCoefficient: 0.3,
+	afterTitle: "1.4em",
+	afterLegend: "1em",
+	blockerRectOffset: "0.2em",
+	lineMarkThreshold: 10, // render marks (dots) on lines if data < N
+	columnOuterPadding: 0.01, // % of width to pad for columns
+	columnInnerPadding: 0, // % of col group width to pad btwn each
 	minPaddingOuter: "1em",
 	bottomPaddingWithoutFooter: "3em",
+	yAxisOrient: {
+		primaryScale: "left",
+		secondaryScale: "right",
+	},
 	aspectRatio: {
 		wide: (9 / 16),
 		longSpot: (4 / 3),
@@ -54,7 +62,7 @@ var display = {
 	padding: {
 		top: 0,
 		right: 0,
-		bottom: "4em",
+		bottom: "3.5em",
 		left: 0
 	}
 };
@@ -92,7 +100,15 @@ var defaultProps = {
 			},
 			dateSettings: {
 				dateFrequency: "auto",
-				dateFormat: "auto"
+				dateFormat: "auto",
+				inputTZ: null,
+				displayTZ: "as-entered"
+			},
+			numericSettings: {
+				ticks: null,
+				precision: 0,
+				prefix: "",
+				suffix: ""
 			}
 		},
 		data: [],

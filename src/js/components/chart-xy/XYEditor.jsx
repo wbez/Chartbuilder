@@ -7,16 +7,19 @@ var PropTypes = React.PropTypes;
 var PureRenderMixin = require("react-addons-pure-render-mixin");
 var update = require("react-addons-update");
 var cx = require("classnames");
-var clone = require("lodash/lang/clone");
-var map = require("lodash/collection/map");
-var keys = require("lodash/object/keys");
-var each = require("lodash/collection/each");
+
+var bind = require("lodash/bind");
+var clone = require("lodash/clone");
+var each = require("lodash/each");
+var keys = require("lodash/keys");
+var map = require("lodash/map");
 
 var dateParsers = require("../../util/process-dates").dateParsers;
 
 /* Shared Chartbuilder components */
 var DataInput = require("../shared/DataInput.jsx");
 var DateScaleSettings = require("../shared/DateScaleSettings.jsx");
+var NumericScaleSettings = require("../shared/NumericScaleSettings.jsx");
 var XY_yScaleSettings = require("../shared/XY_yScaleSettings.jsx");
 
 /* Chartbuilder UI components */
@@ -54,12 +57,9 @@ var axisOptions = [
 var XYEditor = React.createClass({
 
 	propTypes: {
+		errors: PropTypes.object,
 		chartProps: PropTypes.shape({
-			input: PropTypes.shape({
-				raw: PropTypes.string,
-				status: PropTypes.string,
-				valid: PropTypes.bool
-			}).isRequired,
+			input: PropTypes.object.isRequired,
 			chartSettings: PropTypes.array,
 			data: PropTypes.array,
 			scale: PropTypes.object,
@@ -87,22 +87,33 @@ var XYEditor = React.createClass({
 		var allowSecondaryAxis = (chartProps._numSecondaryAxis < (chartProps.data.length - 1));
 
 		/* Create a settings component for each data series (column) */
-		var chartSettings = map(chartProps.chartSettings, function(chartSetting, i) {
-			return <XY_chartSettings
-				chartSettings={chartProps.chartSettings}
-				onUpdate={this._handlePropUpdate.bind(null, "chartSettings")}
-				onUpdateReparse={this._handlePropAndReparse.bind(null, "chartSettings")}
-				allowSecondaryAxis={allowSecondaryAxis}
-				numColors={this.props.numColors}
-				index={i}
-				key={i}
-			/>
-		}, this);
+		var chartSettings = map(chartProps.chartSettings, bind(function(chartSetting, i) {
+			return (
+				<XY_chartSettings
+					chartSettings={chartProps.chartSettings}
+					onUpdate={this._handlePropUpdate.bind(null, "chartSettings")}
+					onUpdateReparse={this._handlePropAndReparse.bind(null, "chartSettings")}
+					allowSecondaryAxis={allowSecondaryAxis}
+					numColors={this.props.numColors}
+					index={i}
+					key={i}
+				/>
+			);
+		}, this));
+
+		var inputErrors = this.props.errors.messages.filter(function(e) {
+			return e.location === "input";
+		});
+
+		var axisErrors = this.props.errors.messages.filter(function(e) {
+			return e.location === "axis";
+		});
 
 		/* Y scale settings */
 		scaleSettings.push(
 			<XY_yScaleSettings
 				scale={chartProps.scale}
+				errors={axisErrors}
 				className="scale-options"
 				onUpdate={this._handlePropAndReparse.bind(null, "scale")}
 				onReset={this._handlePropAndReparse.bind(null, "scale")}
@@ -119,6 +130,7 @@ var XYEditor = React.createClass({
 				<XY_yScaleSettings
 					scale={chartProps.scale}
 					onUpdate={this._handlePropAndReparse.bind(null, "scale")}
+					errors={axisErrors}
 					onReset={this._handlePropAndReparse.bind(null, "scale")}
 					className="scale-options"
 					id="secondaryScale"
@@ -134,13 +146,27 @@ var XYEditor = React.createClass({
 			scaleSettings.push(
 				<DateScaleSettings
 					key="xScale"
+					nowOffset={this.props.session.nowOffset}
+					now={this.props.session.now}
 					scale={chartProps.scale}
 					stepNumber="5"
-					onUpdate={this._handlePropUpdate.bind(null, "scale")}
+					onUpdate={this._handlePropAndReparse.bind(null, "scale")}
 				/>
-			)
+			);
+		} else if (chartProps.scale.isNumeric) {
+			scaleSettings.push(
+				<NumericScaleSettings
+					scale={chartProps.scale}
+					key="xScale"
+					onUpdate={this._handlePropAndReparse.bind(null, "scale")}
+					onReset={this._handlePropAndReparse.bind(null, "scale")}
+					className="scale-options"
+					id="numericSettings"
+					name="Bottom"
+					stepNumber="5"
+				/>
+			);
 		}
-
 		return (
 			<div className="xy-editor">
 				<div className="editor-options">
@@ -149,6 +175,7 @@ var XYEditor = React.createClass({
 						<span>Input your data</span>
 					</h2>
 					<DataInput
+						errors={inputErrors}
 						chartProps={chartProps}
 						className="data-input"
 					/>
@@ -259,6 +286,17 @@ var XY_chartSettings = React.createClass({
 
 	render: function() {
 		var chartSetting = this.props.chartSettings[this.props.index];
+		var altAxisToggle = null;
+		if (this.props.allowSecondaryAxis || chartSetting.altAxis) {
+			altAxisToggle = (
+				<Toggle
+					className={"toggle-" + chartSetting.colorIndex}
+					onToggle={this._handleSettingsUpdate.bind(null, this.props.index, "altAxis")}
+					label="Right axis"
+					toggled={chartSetting.altAxis}
+				/>
+			);
+		}
 
 		return (
 			<div className="series-control">
@@ -273,21 +311,16 @@ var XY_chartSettings = React.createClass({
 
 				<div className="section axis-color">
 					<div className="section colorsection">
-						<label>Color</label>
 						<ColorPicker
 							onChange={this._handleSettingsUpdate.bind(null, this.props.index, "colorIndex")}
 							numColors={this.props.numColors}
 							index={this.props.index}
 							colorIndex={chartSetting.colorIndex}
+							labelText="Color"
 						/>
 					</div>
 					<div className="section axissection">
-						<Toggle
-							className={"toggle-" + chartSetting.colorIndex}
-							onToggle={this._handleSettingsUpdate.bind(null, this.props.index, "altAxis")}
-							label="Right axis"
-							toggled={chartSetting.altAxis}
-						/>
+						{altAxisToggle}
 					</div>
 				</div>
 

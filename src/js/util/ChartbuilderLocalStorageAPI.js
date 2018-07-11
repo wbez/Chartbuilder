@@ -2,17 +2,17 @@
 
 var ChartServerActions = require("../actions/ChartServerActions");
 var defaultInput = require("../config/default-input");
-var chartConfig = require("../charts/chart-config");
+var chartConfig = require("../charts/chart-type-configs");
 //var testInput = require("../../../test/util/test-input");
 
 module.exports = {
 	defaultChart: function() {
 		var default_model = chartConfig.xy.defaultProps;
 		default_model.chartProps.input = {
-			raw: defaultInput,
-			status: "VALID",
-			valid: true
+			//raw: testInput.init_data_time
+			raw: defaultInput
 		};
+
 		ChartServerActions.receiveModel(default_model);
 	},
 

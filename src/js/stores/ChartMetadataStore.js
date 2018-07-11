@@ -2,9 +2,8 @@
  * Store the Chart's metadata. These are properties used to describe the chart
  * and are unrelated to the actual rendering of the chart.
 */
-
-var assign = require("lodash/object/assign");
-var clone = require("lodash/lang/clone");
+var assign = require("lodash/assign");
+var clone = require("lodash/clone");
 var EventEmitter = require("events").EventEmitter;
 
 /* Flux dispatcher */
@@ -99,6 +98,14 @@ function registeredCallback(payload) {
 			break;
 
 		case "update-and-reparse":
+			if (!titleDirty) {
+				data = ChartPropertiesStore.get("data");
+				_metadata.title = defaultTitle(data);
+				ChartMetadataStore.emitChange();
+			}
+			break;
+
+		case "update-data-input":
 			if (!titleDirty) {
 				data = ChartPropertiesStore.get("data");
 				_metadata.title = defaultTitle(data);

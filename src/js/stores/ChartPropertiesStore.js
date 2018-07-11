@@ -3,18 +3,19 @@
  * rendering of the chart.
 */
 
-var assign = require("lodash/object/assign");
+var assign = require("lodash/assign");
 var EventEmitter = require("events").EventEmitter;
 
 /* Flux dispatcher */
 var Dispatcher = require("../dispatcher/dispatcher");
+var SessionStore = require("./SessionStore");
 
 /*
  * Each chart type has an associated parser, defined in its chartConfig
  * settings. The `ChartProptiesStore` is resposible for parsing the input before
  * sending parsed data back to the app, so we require the configs here.
 */
-var chartConfig = require("../charts/chart-config");
+var chartConfig = require("../charts/chart-type-configs");
 
 /* Singleton that houses chart props */
 var _chartProps = {};
@@ -84,6 +85,7 @@ function registeredCallback(payload) {
 		* setting current `chartType`.
 		*/
 		case "receive-model":
+			Dispatcher.waitFor([SessionStore.dispatchToken]);
 			chartType = action.model.metadata.chartType;
 			config = chartConfig[chartType];
 			parser = chartConfig[chartType].parser;
